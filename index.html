@@ -4,21 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chaos Fractal Generator</title>
-    <script src="script.js" defer></script>
+    <script src="script2.js" defer></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <textarea name="numOfVertices" id="numOfVertices numbersOnly"></textarea>
-    <!-- restriction type -->
-     <input type="radio" name="rType" value="rType1" id="rType1">
-     <!-- <label for="rType1"></label> -->
-     <input type="radio" name="rType" value="rType2" id="rType2">
-     <input type="radio" name="rType" value="rType3" id="rType3">
-    <!-- slider how far on the line the dot falls -->
-     <input type="range" name="nRange" id="nRange" min="0" max="1">
-    <!-- number of points -->
-    <textarea name="numOfPoints" id="numOfPoints numbersOnly"></textarea>
-    <!-- radius -->
-    <textarea name="radius" id="radius numbersOnly"></textarea>
+    <div class="pageWrapper">
+        <div class="inputWrapper">
+            <div class="numberOfVerticesWrapper">
+                <label for="numberOfVertices">Number Of Vertices</label>
+                <textarea name="numberOfVertices" id="numberOfVertices" class="numbersOnly"></textarea>
+            </div>
+            <!-- restriction type -->
+             <div class="rTypeWrapper">
+                <div class="rType1Wrapper">
+                    <input type="radio" name="rType" value="rType1" id="rType1" checked>
+                    <label for="rType1">No restriction</label>
+                </div>
+                <div class="rType2Wrapper">
+                    <input type="radio" name="rType" value="rType2" id="rType2">
+                    <label for="rType2">Point chosen can't be same as previous</label>
+                </div>
+                <div class="rType3Wrapper">
+                    <input type="radio" name="rType" value="rType3" id="rType3">
+                    <label for="rType3">Point Chosen can't be the same or adjacent to previous point</label>
+                </div>
+             </div>
+            <!-- slider how far on the line the dot falls -->
+            <label for="nRange">N Value</label>
+            <textarea name="nRangeText" id="nRangeText" class=""></textarea>
+            <input type="range" name="nRange" id="nRange" min="0" max="100">
+            <!-- number of points -->
+            <label for="numOfPoints">Number of points</label>
+            <textarea name="numOfPoints" id="numOfPoints" class="numbersOnly"></textarea>
+            <!-- radius -->
+            <label for="radius">Radius</label>
+            <textarea name="radius" id="radius" class="numbersOnly"></textarea>
+            <input type="button" value="Start" id="startButton">
+            <div class="colorBoolWrapper">
+                <div class="colorBoolButtonWrapper">
+                    <input type="checkbox" name="colorBool" value="colorBool" id="colorBool" checked>
+                    <label for="rType1">Color Points?</label>
+                </div>
+            </div>
+            <div class="lightenBoolWrapper">
+                <div class="lightenButtonWrapper">
+                    <input type="checkbox" name="lightenBool" value="lightenBool" id="lightenBool" checked>
+                    <label for="rType1">Lighten points near middle?</label>
+                </div>
+            </div>
+        </div>
+        <canvas id="canvas" width="1000px" height="1000px"></canvas>
+    </div>
 
 </body>
 </html>

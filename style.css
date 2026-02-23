@@ -1,0 +1,48 @@
+canvas {
+  width: 1000px;
+  height: 1000px;
+  border: 1px, black, solid;
+}
+
+div.inputWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  resize: none;
+  width: 100px;
+  height: 16px;
+}
+
+input[type=range] {
+  width: 200px;
+}
+
+.rTypeWrapper {
+  display: flex;
+  flex-direction: column;
+}
+.rTypeWrapper input {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+.rTypeWrapper label {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
+#startButton {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
+.pageWrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+* {
+  width: -moz-fit-content;
+  width: fit-content;
+}/*# sourceMappingURL=style.css.map */

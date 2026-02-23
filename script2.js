@@ -253,54 +253,72 @@ function hue_to_rgb(p, q, t) {
         let current_g = 0
         let current_b = 0
 
-        for (let x = 1; x < inputArray.numOfPoints; x++) {
+        let pointsDrawn = 0;
 
-        target_vertex = pick_vertex(inputArray.rType, inputArray.numberOfVertices)
+        function drawBatch() {
+            let pointsPerFrame = Math.max(1, Math.floor(Math.log(pointsDrawn + 1)));
 
-        // Get the coordinates of the chosen vertex
-        target_x = get_vertex_coord("x", target_vertex, inputArray.numberOfVertices, inputArray.radius)
-        target_y = get_vertex_coord("y", target_vertex, inputArray.numberOfVertices, inputArray.radius)
+            for (let i = 0; i < pointsPerFrame; i++) {
 
-        if (inputArray.colorBool == true) {
-            // Set color based on the chosen vertex
-            angle = vertex_to_angle(target_vertex, inputArray.numberOfVertices)
+                if (pointsDrawn >= inputArray.numOfPoints) {
+                    return;
+                }
 
-            if (inputArray.lightenBool == true) {
-                adjusted_luminance = adjust_luminance(current_x, current_y, target_x, target_y, inputArray.radius)
-                let rgbResult = hsl_to_rgb(angle/360, 1, adjusted_luminance)
-                current_r = rgbResult.r
-                current_g = rgbResult.g
-                current_b = rgbResult.b
+                target_vertex = pick_vertex(inputArray.rType, inputArray.numberOfVertices)
+
+                // Get the coordinates of the chosen vertex
+                target_x = get_vertex_coord("x", target_vertex, inputArray.numberOfVertices, inputArray.radius)
+                target_y = get_vertex_coord("y", target_vertex, inputArray.numberOfVertices, inputArray.radius)
+
+                if (inputArray.colorBool == true) {
+                    // Set color based on the chosen vertex
+                    angle = vertex_to_angle(target_vertex, inputArray.numberOfVertices)
+
+                    if (inputArray.lightenBool == true) {
+                        adjusted_luminance = adjust_luminance(current_x, current_y, target_x, target_y, inputArray.radius)
+                        let rgbResult = hsl_to_rgb(angle/360, 1, adjusted_luminance)
+                        current_r = rgbResult.r
+                        current_g = rgbResult.g
+                        current_b = rgbResult.b
+                    }
+                    else {
+                        let rgbResult = hsl_to_rgb(angle/360, 1, .5)
+                        current_r = rgbResult.r
+                        current_g = rgbResult.g
+                        current_b = rgbResult.b
+                    }
+                //    pc r, g, b
+                }
+                else { // color_bool = false
+                    current_r = 255
+                    current_g = 255
+                    current_b = 255
+                }
+                // Move a fraction of the way from the current point to the target vertex
+                let lerpResults = lerp(current_x, current_y, target_x, target_y, inputArray.nValue)
+
+                // The new position becomes the current position
+                current_x = lerpResults.x
+                current_y = lerpResults.y
+
+                // Go to the new position && draw a small point
+                // go current_x, current_y
+                // console.log("start point draw")
+                ctx.beginPath();
+                ctx.arc(current_x, current_y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = `rgb(${current_r}, ${current_g}, ${current_b})`;
+                ctx.fill();
+                // ctx.stroke();
+
+                pointsDrawn++;
             }
-            else {
-                let rgbResult = hsl_to_rgb(angle/360, 1, .5)
-                current_r = rgbResult.r
-                current_g = rgbResult.g
-                current_b = rgbResult.b
+
+            if (pointsDrawn < inputArray.numOfPoints) {
+                requestAnimationFrame(drawBatch);
             }
-        //    pc r, g, b
         }
-        else { // color_bool = false
-            current_r = 255
-            current_g = 255
-            current_b = 255
-        }
-        // Move a fraction of the way from the current point to the target vertex
-        let lerpResults = lerp(current_x, current_y, target_x, target_y, inputArray.nValue)
 
-        // The new position becomes the current position
-        current_x = lerpResults.x
-        current_y = lerpResults.y
-
-        // Go to the new position && draw a small point
-        // go current_x, current_y
-        // console.log("start point draw")
-        ctx.beginPath();
-        ctx.arc(current_x, current_y, 2, 0, 2 * Math.PI);
-        ctx.fillStyle = `rgb(${current_r}, ${current_g}, ${current_b})`;
-        ctx.fill();
-        // ctx.stroke();
-        }
+        drawBatch();
     }
 
 
