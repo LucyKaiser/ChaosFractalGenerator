@@ -1,7 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("canvas")
+    const ctx = canvas.getContext("2d")
+    let centerX = canvas.width/2
+    let centerY = canvas.height/2
     canvas.style.background = "black"
 
     document.addEventListener("keydown", function(e) {
@@ -70,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let startButton = document.getElementById("startButton")
     startButton.addEventListener("click", () => {
-        startDraw(getInputs())
+        startDraw(getInputs(), true)
     })
 
     function random(min, max) {
@@ -133,12 +135,12 @@ function hue_to_rgb(p, q, t) {
     function calculate_offset(numberOfVertices, radius) {
         // console.log("function calculate offset called");
     // assume first point is min && max
-    y_min = 500 + radius * Math.sin((-90 + (1 * 360 / numberOfVertices))* (Math.PI / 180))
+    y_min = centerY + radius * Math.sin((-90 + (1 * 360 / numberOfVertices))* (Math.PI / 180))
     y_max = y_min
 
     // loop through the other vertices to find the actual min && max
     for (let i = 2; i <= numberOfVertices; i++) {
-        current_y = 500 + radius * Math.sin((-90 + (i * 360 / numberOfVertices)) * (Math.PI / 180))
+        current_y = centerY + radius * Math.sin((-90 + (i * 360 / numberOfVertices)) * (Math.PI / 180))
         if (current_y < y_min) {
             y_min = current_y
         }
@@ -150,16 +152,16 @@ function hue_to_rgb(p, q, t) {
     shape_height = y_max - y_min
     shape_center_y = y_min + (shape_height / 2)
 
-    return 500 - shape_center_y
+    return centerY - shape_center_y
     }
 
     function get_vertex_coord(which_coord, vertex_index, numberOfVertices, radius) {
         // console.log("function get vertex coord called");
     if (which_coord == "x") {
-        return 500 + radius * Math.cos((-90 + (vertex_index * 360 / numberOfVertices))* (Math.PI / 180))
+        return centerX + radius * Math.cos((-90 + (vertex_index * 360 / numberOfVertices))* (Math.PI / 180))
     }
     if (which_coord == "y") {
-        return (500 + radius * Math.sin((-90 + (vertex_index * 360 / numberOfVertices))* (Math.PI / 180)))+calculate_offset(numberOfVertices, radius)
+        return (centerY + radius * Math.sin((-90 + (vertex_index * 360 / numberOfVertices))* (Math.PI / 180)))+calculate_offset(numberOfVertices, radius)
     }
 
     }
@@ -237,30 +239,93 @@ function hue_to_rgb(p, q, t) {
         normalized_dist = dist / (2 * radius)
         return normalized_dist
     }
+    let isDrawing = false
+    let lastX = 0
+    let lastY = 0
+    let savedInputs = null
+    let isFractalDrawing = false
+    let didErase = false
 
-    function startDraw(inputArray) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // console.log("function startdraw called");
-        localStorage.setItem("previous_vertex_index_1", 0)
-        localStorage.setItem("previous_vertex_index_2", 0)
-        localStorage.setItem("previous_vertex_index_3", 0)
+    function startPosition(e) {
+        isDrawing = true
+        const rect = canvas.getBoundingClientRect()
+        lastX = e.clientX - rect.left
+        lastY = e.clientY - rect.top
+        erase(e)
+
+        if (savedInputs !== null && isFractalDrawing === false) {
+            didErase = false
+            startDraw(savedInputs, false)
+        }
+    }
+
+    function finishedPosition() {
+        if (!isDrawing) return
+        isDrawing = false
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.beginPath()
+    }
+
+    function erase(e) {
+        if (!isDrawing) return;
+        didErase = true
+        const rect = canvas.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        ctx.globalCompositeOperation = 'destination-out'
+        ctx.lineWidth = 25
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+        ctx.beginPath()
+        ctx.moveTo(lastX, lastY)
+        ctx.lineTo(x, y)
+        ctx.stroke()
+        lastX = x
+        lastY = y
+    }
+
+    // 3. Event Listeners
+    canvas.addEventListener('mousedown', startPosition)
+    window.addEventListener('mouseup', finishedPosition)
+    canvas.addEventListener('mousemove', erase)
+
+    function startDraw(inputArray, shouldClear) {
+        savedInputs = inputArray
+        isFractalDrawing = true
+
+        if (shouldClear) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // console.log("function startdraw called");
+            localStorage.setItem("previous_vertex_index_1", 0)
+            localStorage.setItem("previous_vertex_index_2", 0)
+            localStorage.setItem("previous_vertex_index_3", 0)
+        }
 
         // start_x, start_y, restriction_type, n, num_of_points, color_bool, lighten_bool
-        let current_x = 500
-        let current_y = 500
+        let current_x = centerX
+        let current_y = centerY
 
         let current_r = 0
         let current_g = 0
         let current_b = 0
 
         let pointsDrawn = 0;
-
+        let isCalculatingPoints = false
         function drawBatch() {
-            let pointsPerFrame = Math.max(1, Math.floor(Math.log(pointsDrawn + 1)));
+            isCalculatingPoints = true
+            ctx.globalCompositeOperation = 'source-over'
+            let pointsPerFrame = Math.max(1, Math.floor(Math.log(pointsDrawn + 1)))*10;
+            // let pointsPerFrame = Math.max(1, Math.floor(Math.sqrt(10*pointsDrawn)));
+
 
             for (let i = 0; i < pointsPerFrame; i++) {
 
                 if (pointsDrawn >= inputArray.numOfPoints) {
+                    isFractalDrawing = false
+                    if (didErase) {
+                        didErase = false
+                        startDraw(savedInputs, false)
+                    }
                     return;
                 }
 
@@ -316,6 +381,7 @@ function hue_to_rgb(p, q, t) {
             if (pointsDrawn < inputArray.numOfPoints) {
                 requestAnimationFrame(drawBatch);
             }
+
         }
 
         drawBatch();
@@ -323,7 +389,7 @@ function hue_to_rgb(p, q, t) {
 
 
 
-
+    startDraw({numberOfVertices:50, rType:1, nValue:0.35, numOfPoints:30000, radius:900, colorBool:true, lightenBool:true, noClear:true}, true)
     // const canvas = document.getElementById("canvas");
     // const ctx = canvas.getContext("2d");
     // ctx.beginPath()
